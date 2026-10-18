@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#073d35">
+    <meta name="description" content="杭州麻将座位、发牌与计分助手">
+    <meta name="mahjong-build" content="2026-10-18.7-guocui-hall-v4">
+    <meta name="application-name" content="赏桂品茗国粹馆">
+    <meta name="apple-mobile-web-app-title" content="赏桂品茗国粹馆">
+    <title>杭州麻将助手 · v4 赏桂品茗国粹馆</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="./icons/mahjong.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    <link rel="manifest" href="./site.webmanifest">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body data-fun="on">
+    <main class="app-shell">
+      <section id="setup-view" class="screen setup-screen" aria-labelledby="setup-title">
+        <header class="brand-header">
+          <div class="brand-tile" aria-hidden="true">白</div>
+          <div>
+            <p class="eyebrow">V4 · 赏桂品茗国粹馆</p>
+            <h1 id="setup-title">四个人，一桌好牌</h1>
+            <p class="lede">按真实座位填名字。开局后位置不再移动，只移动庄牌。</p>
+          </div>
+        </header>
+
+        <form id="setup-form" novalidate>
+          <fieldset class="setup-fieldset">
+            <legend>谁坐哪边</legend>
+            <p class="field-hint">手机朝向你平时操作的方向，上下左右对应真实麻将桌。</p>
+            <div class="seat-setup-map" aria-label="四人真实座位">
+              <label class="seat-input seat-input--top">
+                <span>上方</span>
+                <input id="player-top" name="player-top" maxlength="4" autocomplete="off" placeholder="昵称，最多4字">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="top"> 首局庄家</span>
+              </label>
+              <label class="seat-input seat-input--right">
+                <span>右方</span>
+                <input id="player-right" name="player-right" maxlength="4" autocomplete="off" placeholder="昵称，最多4字">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="right"> 首局庄家</span>
+              </label>
+              <div class="setup-table-mark" aria-hidden="true">
+                <span>庄</span>
+                <small>选一位首庄</small>
+              </div>
+              <label class="seat-input seat-input--bottom">
+                <span>下方</span>
+                <input id="player-bottom" name="player-bottom" maxlength="4" autocomplete="off" placeholder="昵称，最多4字">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="bottom" checked> 首局庄家</span>
+              </label>
+              <label class="seat-input seat-input--left">
+                <span>左方</span>
+                <input id="player-left" name="player-left" maxlength="4" autocomplete="off" placeholder="昵称，最多4字">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="left"> 首局庄家</span>
+              </label>
+            </div>
+            <button id="auto-fill-names" class="text-action" type="button">随机分配四个杭州地名</button>
+            <details class="nickname-presets" data-nickname-presets="setup">
+              <summary>选杭州地名或历史名人</summary>
+              <p>随机分配只从当前分组抽取四个不同昵称；也可按座位单独点选，最多四个字。</p>
+              <div class="nickname-seat-grid" data-nickname-seats aria-label="选择要改昵称的座位"></div>
+              <div class="nickname-group-grid" data-nickname-groups role="group" aria-label="昵称分组"></div>
+              <div data-nickname-options></div>
+            </details>
+            <p class="avatar-editor-hint">点头像更换 · 四男四女，任选喜欢的</p>
+            <div class="avatar-editor" data-avatar-editor="setup" aria-label="选择四位玩家头像"></div>
+          </fieldset>
+
+          <details id="setup-scoring" class="setup-scoring">
+            <summary><strong>这场怎么计分</strong><span id="setup-scoring-summary">底分 1 · 承包开启</span></summary>
+          <fieldset class="setup-fieldset rules-fieldset">
+            <legend>这场怎么计分</legend>
+            <label class="setting-row" for="base-score">
+              <span><strong>底分</strong><small>所有牌型从这个分数起算</small></span>
+              <input id="base-score" name="base-score" type="number" inputmode="decimal" min="0.01" step="0.01" value="1">
+            </label>
+            <label class="setting-row switch-row" for="liability-enabled">
+              <span><strong>三摊承包</strong><small>触发时由承包者支付三家总额</small></span>
+              <span class="switch"><input id="liability-enabled" type="checkbox" checked><span aria-hidden="true"></span></span>
+            </label>
+          </fieldset>
+          </details>
+
+          <label class="fun-option" for="fun-effects-setup">
+            <span><strong>开启特效</strong><small data-fun-state>已开启 · 胡牌与连庄结算特效</small></span>
+            <input id="fun-effects-setup" type="checkbox" data-fun-toggle checked>
+          </label>
+          <p class="effect-preference-note">开启后每次结算播放对应特效，开关自动保存。</p>
+          <details class="effect-preview-menu effect-preview-menu--setup">
+            <summary>看看胡牌与连庄特效</summary>
+            <div class="effect-preview-buttons" aria-label="特效预览，不记分">
+              <button type="button" data-preview-effect="win">胡牌</button><button type="button" data-preview-effect="one">一老</button><button type="button" data-preview-effect="two">二老</button><button type="button" data-preview-effect="three">三老</button>
+            </div>
+            <p>仅预览画面，不改变牌局和分数。</p>
+          </details>
+
+          <div class="setup-start-bar">
+            <p id="setup-error" class="form-error" role="alert"></p>
+            <button id="start-match" class="primary-button start-button" type="submit">开始这场牌</button>
+          </div>
+          <button class="text-action" type="button" data-open-voice data-voice-preview>试听语音播报</button>
+        </form>
+      </section>
+
+      <section id="dashboard-view" class="screen dashboard-screen" aria-labelledby="round-label" hidden>
+        <header class="dashboard-header">
+          <div>
+            <p id="round-label" class="eyebrow">第 1 局</p>
+            <h1 id="dealer-tier">平庄 ×2</h1>
+          </div>
+          <nav class="header-actions" aria-label="牌局管理">
+            <button id="open-history" class="icon-button" type="button">
+              <span aria-hidden="true">局</span>
+              <span>记录</span>
+              <b data-history-count>0</b>
+            </button>
+            <button id="open-nickname-editor" class="icon-button" type="button"><span aria-hidden="true">名</span><span>改名</span></button>
+            <button id="open-settings" class="icon-button" type="button"><span aria-hidden="true">设</span><span>设置</span></button>
+            <button id="open-reset" class="icon-button" type="button"><span aria-hidden="true">新</span><span>重开</span></button>
+          </nav>
+        </header>
+
+        <p id="table-mood" class="table-mood fun-only">牌桌已摆好，等你开胡</p>
+
+        <section class="table-stage" aria-label="真实座位与当前分数">
+          <div class="mahjong-table">
+            <article class="player-card player-card--top" data-seat="top">
+              <img class="player-avatar" data-player-avatar alt="">
+              <span class="seat-relation" data-seat-relation>上方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--right" data-seat="right">
+              <img class="player-avatar" data-player-avatar alt="">
+              <span class="seat-relation" data-seat-relation>右方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--bottom" data-seat="bottom">
+              <img class="player-avatar" data-player-avatar alt="">
+              <span class="seat-relation" data-seat-relation>下方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--left" data-seat="left">
+              <img class="player-avatar" data-player-avatar alt="">
+              <span class="seat-relation" data-seat-relation>左方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+
+            <div class="table-center">
+              <span class="white-dragon" aria-hidden="true">白</span>
+              <p>当前庄家</p>
+              <strong id="center-dealer-name">玩家</strong>
+              <span id="center-tier-label">平庄 · ×2</span>
+            </div>
+          </div>
+        </section>
+
+        <button class="voice-entry" type="button" data-open-voice aria-controls="voice-drawer">
+          <span class="voice-entry-icon" aria-hidden="true">听</span>
+          <span><strong>语音播报</strong><small id="voice-dashboard-status">每局结算后自动朗读</small></span>
+          <span class="voice-version">V4</span>
+        </button>
+        <section class="round-actions" aria-label="本局操作">
+          <button id="open-deal-guide" class="secondary-button" type="button"><span aria-hidden="true">⚄</span> 发牌向导</button>
+          <button id="open-settlement" class="primary-button" type="button"><span aria-hidden="true">和</span> 结束本局</button>
+        </section>
+        <details class="effect-preview-menu effect-preview-menu--table">
+          <summary>特效预览 · 胡牌 / 一老 / 二老 / 三老</summary>
+          <div class="effect-preview-buttons" aria-label="特效预览，不记分">
+            <button type="button" data-preview-effect="win">胡牌</button><button type="button" data-preview-effect="one">一老</button><button type="button" data-preview-effect="two">二老</button><button type="button" data-preview-effect="three">三老</button>
+          </div>
+          <p>仅预览画面，不改变牌局和分数。</p>
+        </details>
+
+        <p class="rule-strip"><span>白板财神</span><span>只算胡法</span><span id="liability-status">三摊承包开启</span></p>
+      </section>
+    </main>
+
+    <section id="deal-drawer" class="drawer" aria-labelledby="deal-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="deal-drawer"></div>
+      <div class="drawer-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow">按真实座位显示</p><h2 id="deal-title">骰子与发牌</h2></div>
+          <button class="close-button" type="button" data-close-drawer="deal-drawer" aria-label="关闭发牌向导">×</button>
+        </header>
+        <div class="drawer-body">
+          <div class="dice-picker">
+            <fieldset><legend>第一颗骰子</legend><div id="die-one-options" class="die-options"></div></fieldset>
+            <span class="dice-plus" aria-hidden="true">＋</span>
+            <fieldset><legend>第二颗骰子</legend><div id="die-two-options" class="die-options"></div></fieldset>
+          </div>
+          <p class="dice-sum">总点数 <strong id="dice-total">2</strong></p>
+
+          <div id="deal-seat-map" class="mini-table" aria-label="开门位置示意"></div>
+          <div id="opening-wall-result" class="guide-result"></div>
+          <button id="read-deal-guide" class="text-action" type="button" data-speech-output="deal">播报当前发牌位置</button>
+          <ol id="deal-steps" class="guide-steps"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="settlement-drawer" class="drawer" aria-labelledby="settlement-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="settlement-drawer"></div>
+      <div class="drawer-panel drawer-panel--wide settlement-panel">
+        <header class="drawer-header settlement-header">
+          <div><p id="settlement-mode-label" class="eyebrow">确认后同时换庄</p><h2 id="settlement-title">结束本局</h2></div>
+          <fieldset class="settlement-outcome"><legend class="sr-only">本局结果</legend><div class="segmented-control"><button type="button" data-outcome="win" aria-pressed="true">有人胡</button><button type="button" data-outcome="draw" aria-pressed="false">流局</button></div></fieldset>
+          <button class="close-button" type="button" data-close-drawer="settlement-drawer" aria-label="关闭结算">×</button>
+        </header>
+        <div class="drawer-body settlement-body">
+          <p id="settlement-edit-note" class="settlement-edit-note" hidden></p>
+          <fieldset id="winner-section" class="choice-section"><legend>谁胡了</legend><div id="winner-options" class="player-choice-grid"></div></fieldset>
+          <fieldset id="win-type-section" class="choice-section"><legend>怎么胡 <small class="compact-choice-hint">最多叠加 3 种</small></legend><p class="field-hint">可同时选择 1–3 种，倍率相乘；平胡单独计算。再次点击已选项即可取消。</p><div class="win-type-selection" role="status" aria-live="polite"><p id="win-type-selection-summary">已选平胡 · 单独计算</p><strong id="win-type-combined-multiplier">合计 ×1</strong></div><div id="win-type-options" class="win-type-groups"></div></fieldset>
+          <fieldset id="liability-section" class="choice-section"><legend>三摊承包</legend><div class="liability-options-row"><span class="compact-liability-label" aria-hidden="true">承包</span><div class="segmented-control liability-toggle"><button type="button" data-liability="false" aria-pressed="true">没有承包</button><button type="button" data-liability="true" aria-pressed="false">触发承包</button></div></div><div id="liable-player-wrap" hidden><p class="field-hint">谁来承包三家总额？</p><div id="liable-player-options" class="player-choice-grid"></div></div></fieldset>
+
+          <section class="settlement-preview" aria-labelledby="preview-title">
+            <div class="preview-heading"><h3 id="preview-title">结算预览</h3><span id="preview-summary">请选择胡牌者</span></div>
+            <div id="settlement-preview-list" class="preview-list"></div>
+          </section>
+          <p id="settlement-error" class="form-error" role="alert"></p>
+        </div>
+        <footer class="drawer-footer settlement-footer"><button id="confirm-settlement" class="primary-button" type="button" disabled>确认结算并开下一局</button></footer>
+      </div>
+    </section>
+
+    <section id="history-drawer" class="drawer" aria-labelledby="history-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="history-drawer"></div>
+      <div class="drawer-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow">每局都有计算明细</p><h2 id="history-title">牌局记录</h2></div>
+          <button class="close-button" type="button" data-close-drawer="history-drawer" aria-label="关闭牌局记录">×</button>
+        </header>
+        <div class="drawer-body"><div id="history-list" class="history-list"></div></div>
+        <footer class="drawer-footer"><button id="undo-round" class="secondary-button danger-outline" type="button">撤销上一局</button></footer>
+      </div>
+    </section>
+
+    <dialog id="reset-dialog" class="confirm-dialog">
+      <form method="dialog">
+        <span class="dialog-tile" aria-hidden="true">新</span>
+        <h2>重新开一场？</h2>
+        <p>当前四人的分数和牌局记录会从本机清除。</p>
+        <div class="dialog-actions"><button value="cancel" class="secondary-button">继续当前牌局</button><button id="confirm-reset" value="confirm" class="danger-button">清除并重开</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="nickname-dialog" class="confirm-dialog nickname-dialog" aria-labelledby="nickname-title">
+      <form id="nickname-form">
+        <span class="dialog-tile" aria-hidden="true">名</span>
+        <h2 id="nickname-title">修改昵称与头像</h2>
+        <p>座位和分数保持不变，昵称最多 4 个字且不能重复。</p>
+        <div class="avatar-editor" data-avatar-editor="nickname" aria-label="更换四位玩家头像"></div>
+        <p class="avatar-editor-hint">点头像更换 · 保存后生效</p>
+        <div class="nickname-fields">
+          <label>上方<input name="top" maxlength="4" autocomplete="off" required></label>
+          <label>右方<input name="right" maxlength="4" autocomplete="off" required></label>
+          <label>下方<input name="bottom" maxlength="4" autocomplete="off" required></label>
+          <label>左方<input name="left" maxlength="4" autocomplete="off" required></label>
+        </div>
+        <p id="nickname-error" class="form-error" role="alert"></p>
+        <button id="auto-fill-match-names" type="button" class="text-action">随机分配四个杭州地名</button>
+        <details class="nickname-presets" data-nickname-presets="nickname">
+          <summary>选杭州地名或历史名人</summary>
+          <p>随机分配只从当前分组抽取四个不同昵称；也可按座位单独点选，最多四个字。</p>
+          <div class="nickname-seat-grid" data-nickname-seats aria-label="选择要改昵称的座位"></div>
+          <div class="nickname-group-grid" data-nickname-groups role="group" aria-label="昵称分组"></div>
+          <div data-nickname-options></div>
+        </details>
+        <div class="dialog-actions"><button id="cancel-nickname-edit" type="button" class="secondary-button">取消</button><button type="submit" class="primary-button">保存修改</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="avatar-dialog" class="confirm-dialog avatar-dialog" aria-labelledby="avatar-title">
+      <div class="avatar-dialog-header">
+        <h2 id="avatar-title">选择头像</h2>
+        <button id="close-avatar-picker" class="close-button" type="button" aria-label="关闭头像选择">×</button>
+      </div>
+      <p class="avatar-picker-hint">点一个喜欢的头像，同一头像可多人使用。</p>
+      <div id="avatar-options"></div>
+    </dialog>
+
+    <dialog id="settings-dialog" class="confirm-dialog settings-dialog" aria-labelledby="settings-title">
+      <form id="settings-form">
+        <span class="dialog-tile" aria-hidden="true">规</span>
+        <h2 id="settings-title">牌局设置</h2>
+        <p>勾选本场可用的胡牌方式，并设置各自倍率。</p>
+        <button id="toggle-fullscreen" type="button" class="secondary-button fullscreen-toggle">进入全屏</button>
+        <label class="fun-option" for="fun-effects-settings">
+          <span><strong>开启特效</strong><small data-fun-state>已开启 · 胡牌与连庄结算特效</small></span>
+          <input id="fun-effects-settings" type="checkbox" data-fun-toggle checked>
+        </label>
+        <p class="effect-preference-note">开启后每次结算播放对应特效，开关自动保存。</p>
+        <div id="win-type-settings-list" class="win-type-settings-list"></div>
+        <p id="settings-error" class="form-error" role="alert"></p>
+        <div class="dialog-actions"><button id="cancel-settings" type="button" class="secondary-button">取消</button><button type="submit" class="primary-button">保存设置</button></div>
+      </form>
+    </dialog>
+
+    <section id="voice-drawer" class="drawer voice-drawer" aria-labelledby="voice-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="voice-drawer"></div>
+      <div class="drawer-panel voice-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow">V4 · 牌局播报</p><h2 id="voice-title">听分数，继续打牌</h2></div>
+          <button class="close-button" type="button" data-close-drawer="voice-drawer" aria-label="关闭语音播报">×</button>
+        </header>
+        <div class="drawer-body voice-body">
+          <p id="voice-capability" class="voice-capability"></p>
+          <label class="voice-announcement-option"><input id="voice-announcements" type="checkbox" checked> 自动播报每局结算</label>
+          <div class="voice-output-actions">
+            <button class="primary-button" type="button" data-speech-output="scores">播报分数</button>
+            <button class="secondary-button" type="button" data-speech-output="dealer">播报庄家</button>
+            <button class="secondary-button" type="button" data-speech-output="deal">播报起牌位置</button>
+            <button class="secondary-button" type="button" data-speech-output="sample">试听声音</button>
+          </div>
+          <p id="voice-status" class="voice-status" role="status">等待播报</p>
+          <button id="voice-stop" class="text-action" type="button" hidden>停止播报</button>
+          <div id="voice-chat" class="voice-chat" role="log" aria-label="牌局播报记录" aria-live="polite" aria-relevant="additions"></div>
+          <details class="voice-help"><summary>播报说明</summary>
+            <p>确认结算后，自动播报胡牌者、胡法、本局得分、累计分数和下一局庄家。流局也会播报。手动按钮可随时朗读当前牌局；“重听”会重复上一条播报。</p>
+            <p>使用设备系统的中文声音。请先点“试听声音”，并确认手机媒体音量已打开；声音和联网需求由设备系统决定。离开页面会停止播报。</p>
+          </details>
+        </div>
+        <footer class="drawer-footer voice-footer">
+          <button id="voice-replay" class="secondary-button" type="button">重听上一条</button>
+        </footer>
+      </div>
+    </section>
+
+    <aside id="round-celebration" class="round-celebration" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <div class="effect-rays" aria-hidden="true"></div>
+      <div class="effect-rings" aria-hidden="true"></div>
+      <div class="effect-particles" aria-hidden="true"></div>
+      <div class="effect-content">
+        <span class="effect-side-tile effect-side-tile--left" aria-hidden="true">连</span>
+        <span class="effect-side-tile effect-side-tile--right" aria-hidden="true">庄</span>
+        <span class="celebration-stamp" data-celebration-stamp aria-hidden="true">胡</span>
+        <div class="celebration-copy">
+          <strong data-celebration-title>胡啦，这把漂亮！</strong>
+          <p data-celebration-detail></p>
+          <b data-celebration-score></b>
+          <small data-celebration-note></small>
+        </div>
+        <span class="effect-preview-label" data-effect-preview-label hidden>特效预览 · 不记分</span>
+      </div>
+    </aside>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

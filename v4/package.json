@@ -1,0 +1,11 @@
+{
+  "name": "hangzhou-mahjong-assistant-v4",
+  "version": "4.7.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "icons": "node scripts/generate-icons.mjs",
+    "build": "node scripts/build-single-file.mjs",
+    "release": "node scripts/package-release.mjs"
+  }
+}

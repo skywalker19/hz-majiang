@@ -1,1 +1,7 @@
 .worktrees/
+node_modules/
+.DS_Store
+v3/release/
+v3/dist/models/
+v4/release/
+snapshots/*.tar.gz

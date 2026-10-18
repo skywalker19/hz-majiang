@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#073d35">
+    <meta name="description" content="杭州麻将座位、发牌与计分助手">
+    <title>杭州麻将助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="setup-view" class="screen setup-screen" aria-labelledby="setup-title">
+        <header class="brand-header">
+          <div class="brand-tile" aria-hidden="true">白</div>
+          <div>
+            <p class="eyebrow">白板财神 · 杭州打法</p>
+            <h1 id="setup-title">摆好四个人的位置</h1>
+            <p class="lede">按真实座位填名字。开局后位置不再移动，只移动庄牌。</p>
+          </div>
+        </header>
+
+        <form id="setup-form" novalidate>
+          <fieldset class="setup-fieldset">
+            <legend>谁坐哪边</legend>
+            <p class="field-hint">手机朝向你平时操作的方向，上下左右对应真实麻将桌。</p>
+            <div class="seat-setup-map" aria-label="四人真实座位">
+              <label class="seat-input seat-input--top">
+                <span>上方</span>
+                <input id="player-top" name="player-top" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="top"> 首局庄家</span>
+              </label>
+              <label class="seat-input seat-input--right">
+                <span>右方</span>
+                <input id="player-right" name="player-right" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="right"> 首局庄家</span>
+              </label>
+              <div class="setup-table-mark" aria-hidden="true">
+                <span>庄</span>
+                <small>选一位首庄</small>
+              </div>
+              <label class="seat-input seat-input--bottom">
+                <span>下方</span>
+                <input id="player-bottom" name="player-bottom" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="bottom" checked> 首局庄家</span>
+              </label>
+              <label class="seat-input seat-input--left">
+                <span>左方</span>
+                <input id="player-left" name="player-left" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="left"> 首局庄家</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="setup-fieldset rules-fieldset">
+            <legend>这场怎么计分</legend>
+            <label class="setting-row" for="base-score">
+              <span><strong>底分</strong><small>所有牌型从这个分数起算</small></span>
+              <input id="base-score" name="base-score" type="number" inputmode="decimal" min="0.01" step="0.01" value="1">
+            </label>
+            <label class="setting-row switch-row" for="liability-enabled">
+              <span><strong>三摊承包</strong><small>触发时由承包者支付三家总额</small></span>
+              <span class="switch"><input id="liability-enabled" type="checkbox" checked><span aria-hidden="true"></span></span>
+            </label>
+          </fieldset>
+
+          <p id="setup-error" class="form-error" role="alert"></p>
+          <button id="start-match" class="primary-button start-button" type="submit">开始这场牌</button>
+        </form>
+      </section>
+
+      <section id="dashboard-view" class="screen dashboard-screen" aria-labelledby="round-label" hidden>
+        <header class="dashboard-header">
+          <div>
+            <p id="round-label" class="eyebrow">第 1 局</p>
+            <h1 id="dealer-tier">平庄 ×2</h1>
+          </div>
+          <nav class="header-actions" aria-label="牌局管理">
+            <button id="open-history" class="icon-button" type="button">
+              <span aria-hidden="true">局</span>
+              <span>记录</span>
+              <b data-history-count>0</b>
+            </button>
+            <button id="open-reset" class="icon-button" type="button"><span aria-hidden="true">新</span><span>重开</span></button>
+          </nav>
+        </header>
+
+        <section class="table-stage" aria-label="真实座位与当前分数">
+          <div class="mahjong-table">
+            <article class="player-card player-card--top" data-seat="top">
+              <span class="seat-relation" data-seat-relation>上方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--right" data-seat="right">
+              <span class="seat-relation" data-seat-relation>右方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--bottom" data-seat="bottom">
+              <span class="seat-relation" data-seat-relation>下方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--left" data-seat="left">
+              <span class="seat-relation" data-seat-relation>左方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+
+            <div class="table-center">
+              <span class="white-dragon" aria-hidden="true">白</span>
+              <p>当前庄家</p>
+              <strong id="center-dealer-name">玩家</strong>
+              <span id="center-tier-label">平庄 · ×2</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="round-actions" aria-label="本局操作">
+          <button id="open-deal-guide" class="secondary-button" type="button"><span aria-hidden="true">⚄</span> 发牌向导</button>
+          <button id="open-settlement" class="primary-button" type="button"><span aria-hidden="true">和</span> 结束本局</button>
+        </section>
+
+        <p class="rule-strip"><span>白板财神</span><span>只算胡法</span><span id="liability-status">三摊承包开启</span></p>
+      </section>
+    </main>
+
+    <section id="deal-drawer" class="drawer" aria-labelledby="deal-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="deal-drawer"></div>
+      <div class="drawer-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow">按真实座位显示</p><h2 id="deal-title">骰子与发牌</h2></div>
+          <button class="close-button" type="button" data-close-drawer="deal-drawer" aria-label="关闭发牌向导">×</button>
+        </header>
+        <div class="drawer-body">
+          <div class="dice-picker">
+            <fieldset><legend>第一颗骰子</legend><div id="die-one-options" class="die-options"></div></fieldset>
+            <span class="dice-plus" aria-hidden="true">＋</span>
+            <fieldset><legend>第二颗骰子</legend><div id="die-two-options" class="die-options"></div></fieldset>
+          </div>
+          <p class="dice-sum">总点数 <strong id="dice-total">2</strong></p>
+
+          <div id="deal-seat-map" class="mini-table" aria-label="开门位置示意"></div>
+          <div id="opening-wall-result" class="guide-result"></div>
+          <ol id="deal-steps" class="guide-steps"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="settlement-drawer" class="drawer" aria-labelledby="settlement-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="settlement-drawer"></div>
+      <div class="drawer-panel drawer-panel--wide">
+        <header class="drawer-header">
+          <div><p class="eyebrow">确认后同时换庄</p><h2 id="settlement-title">结束本局</h2></div>
+          <button class="close-button" type="button" data-close-drawer="settlement-drawer" aria-label="关闭结算">×</button>
+        </header>
+        <div class="drawer-body settlement-body">
+          <fieldset class="choice-section"><legend>本局结果</legend><div class="segmented-control"><button type="button" data-outcome="win" aria-pressed="true">有人胡</button><button type="button" data-outcome="draw" aria-pressed="false">流局</button></div></fieldset>
+          <fieldset id="winner-section" class="choice-section"><legend>谁胡了</legend><div id="winner-options" class="player-choice-grid"></div></fieldset>
+          <fieldset id="win-type-section" class="choice-section"><legend>怎么胡</legend><div id="win-type-options" class="win-type-grid"></div></fieldset>
+          <fieldset id="liability-section" class="choice-section"><legend>三摊承包</legend><div class="segmented-control liability-toggle"><button type="button" data-liability="false" aria-pressed="true">没有承包</button><button type="button" data-liability="true" aria-pressed="false">触发承包</button></div><div id="liable-player-wrap" hidden><p class="field-hint">谁来承包三家总额？</p><div id="liable-player-options" class="player-choice-grid"></div></div></fieldset>
+
+          <section class="settlement-preview" aria-labelledby="preview-title">
+            <div class="preview-heading"><h3 id="preview-title">结算预览</h3><span id="preview-summary">请选择胡牌者</span></div>
+            <div id="settlement-preview-list" class="preview-list"></div>
+          </section>
+          <p id="settlement-error" class="form-error" role="alert"></p>
+        </div>
+        <footer class="drawer-footer"><button id="confirm-settlement" class="primary-button" type="button" disabled>确认结算并开下一局</button></footer>
+      </div>
+    </section>
+
+    <section id="history-drawer" class="drawer" aria-labelledby="history-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="history-drawer"></div>
+      <div class="drawer-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow">每局都有计算明细</p><h2 id="history-title">牌局记录</h2></div>
+          <button class="close-button" type="button" data-close-drawer="history-drawer" aria-label="关闭牌局记录">×</button>
+        </header>
+        <div class="drawer-body"><div id="history-list" class="history-list"></div></div>
+        <footer class="drawer-footer"><button id="undo-round" class="secondary-button danger-outline" type="button">撤销上一局</button></footer>
+      </div>
+    </section>
+
+    <dialog id="reset-dialog" class="confirm-dialog">
+      <form method="dialog">
+        <span class="dialog-tile" aria-hidden="true">新</span>
+        <h2>重新开一场？</h2>
+        <p>当前四人的分数和牌局记录会从本机清除。</p>
+        <div class="dialog-actions"><button value="cancel" class="secondary-button">继续当前牌局</button><button id="confirm-reset" value="confirm" class="danger-button">清除并重开</button></div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

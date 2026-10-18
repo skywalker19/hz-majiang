@@ -1,0 +1,11 @@
+{
+  "name": "hangzhou-mahjong-assistant-v3",
+  "version": "3.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-single-file.mjs",
+    "release": "node scripts/package-release.mjs",
+    "test": "node --test"
+  }
+}

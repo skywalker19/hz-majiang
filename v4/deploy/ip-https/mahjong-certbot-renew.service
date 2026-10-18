@@ -1,0 +1,10 @@
+[Unit]
+Description=Renew Mahjong IP certificate and reload host Nginx
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/letsencrypt/renewal/mahjong-ip.conf
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mahjong-certbot-renew

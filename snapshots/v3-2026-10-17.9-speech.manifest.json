@@ -1,0 +1,207 @@
+{
+  "version": "2026-10-17.9-speech",
+  "archive": "v3-2026-10-17.9-speech.tar.gz",
+  "archiveSha256": "72c7ee4732abf8968ea4525a50b68b5b9a18a085324739ae7552ccf5e035cfff",
+  "excluded": [
+    ".DS_Store",
+    ".venv",
+    ".worktrees",
+    "__pycache__",
+    "browser-models",
+    "models",
+    "node_modules",
+    "release"
+  ],
+  "files": [
+    {
+      "path": "v3/.gitignore",
+      "bytes": 12,
+      "sha256": "b18aa601c08deae4db2a084f8747ad4e15bb0a47eec456d90df2aa99ad00d239"
+    },
+    {
+      "path": "v3/README.md",
+      "bytes": 3731,
+      "sha256": "259a2f73a97b4012a7ddcd85ab3ca2052f1583b1f1253a8d9c88333059897fa0"
+    },
+    {
+      "path": "v3/dist/index.html",
+      "bytes": 113571,
+      "sha256": "64dc78a3fd6eecfdd2d85888d68972d29923a6539bd3a8ee669f030397deb13b"
+    },
+    {
+      "path": "v3/index.html",
+      "bytes": 18139,
+      "sha256": "046c5eee2b189e7d8927e958112fcc9a71eb69f9e6cd762dbda1219d5596f2f6"
+    },
+    {
+      "path": "v3/js/app.js",
+      "bytes": 33972,
+      "sha256": "fe1653e7f08073cf8d44907c9fed4ce305b8f0fdf12d0b247fe23abc4f68f27a"
+    },
+    {
+      "path": "v3/js/dealing.js",
+      "bytes": 1316,
+      "sha256": "e934fccd421d738301aa585819b5fad0699addf0b35751c6b2bfcbb73082f6bd"
+    },
+    {
+      "path": "v3/js/local-corrector.js",
+      "bytes": 12508,
+      "sha256": "2c1cf6ee79e0089803beecfbe33535b200b6c612578cbc39fb5ff260c29fa2bd"
+    },
+    {
+      "path": "v3/js/model-cache.js",
+      "bytes": 8194,
+      "sha256": "c0c3e1202ee8ee841813e5bcca8138e6abeb638a0233a5586c56a69a00c9da46"
+    },
+    {
+      "path": "v3/js/rules.js",
+      "bytes": 4163,
+      "sha256": "912d89f8ab730d70f184802a75f2cc76fa858d1e1c5837e9b5f9302df56877b0"
+    },
+    {
+      "path": "v3/js/sensevoice.js",
+      "bytes": 13365,
+      "sha256": "a54b85a4fa6bfe30346eb44f5e065796cf311f86667e079fa7ce9647738adf35"
+    },
+    {
+      "path": "v3/js/speech.js",
+      "bytes": 2426,
+      "sha256": "b492d5820ed491f10dee2df27d64745339448d077a1729ae271278ed04845696"
+    },
+    {
+      "path": "v3/js/state.js",
+      "bytes": 8369,
+      "sha256": "9f28d5314508213d5d3c6d52456ef824da8af9d954b5e7c7ae725d347ca52f35"
+    },
+    {
+      "path": "v3/js/voice-app.js",
+      "bytes": 6141,
+      "sha256": "716340078fced066abf06db440b9ca96540427b67c9773314515de77b142ddbb"
+    },
+    {
+      "path": "v3/js/voice-commands.js",
+      "bytes": 7295,
+      "sha256": "e88ce73f20c140f8d34193f7916b2081ab7ff71843090edf4ecbfe0783d39059"
+    },
+    {
+      "path": "v3/js/voice.js",
+      "bytes": 6150,
+      "sha256": "175388e26b9bbe498ac9777363ecbf064a524af597c2181dcf674ff666caff7e"
+    },
+    {
+      "path": "v3/package.json",
+      "bytes": 255,
+      "sha256": "9beea789dc53d5953208c9b743417ed59a64d849b911c4e339d325d382caf1bd"
+    },
+    {
+      "path": "v3/scripts/build-single-file.mjs",
+      "bytes": 2041,
+      "sha256": "ccf8954b0ad64fe0aa64b47acb8132efcc12115a1dcdff11df7236726772811d"
+    },
+    {
+      "path": "v3/scripts/package-release.mjs",
+      "bytes": 1853,
+      "sha256": "5bcc4c50df1aad392b3ac532407b2d41959b4dd1fe6661a05b03660e5d9c360f"
+    },
+    {
+      "path": "v3/server/.dockerignore",
+      "bytes": 50,
+      "sha256": "b683a708fff38907b118e7b1ac0be8b57923abb66829a453669df0dd11e35f4b"
+    },
+    {
+      "path": "v3/server/.gitignore",
+      "bytes": 50,
+      "sha256": "b683a708fff38907b118e7b1ac0be8b57923abb66829a453669df0dd11e35f4b"
+    },
+    {
+      "path": "v3/server/Dockerfile",
+      "bytes": 535,
+      "sha256": "6b6c0712451233c55ede7542ea874b5a721704b1bda781822692c172103bfb2f"
+    },
+    {
+      "path": "v3/server/README.md",
+      "bytes": 14766,
+      "sha256": "36cb00dea91c94d880a3c1fd1da18b1b05fc7b0b6c4b9d90606fe8e6f5f77e71"
+    },
+    {
+      "path": "v3/server/app.py",
+      "bytes": 6578,
+      "sha256": "c6f01581f7954f02c009861680c3ff47f5a3882aff474a323d8f692d85a2b0e6"
+    },
+    {
+      "path": "v3/server/compose.yaml",
+      "bytes": 535,
+      "sha256": "e28064f8b93ee1ef7c5a87147f4d0b302b5d389467521bbc297c8c7b88686b4e"
+    },
+    {
+      "path": "v3/server/download_browser_model.py",
+      "bytes": 5188,
+      "sha256": "3308d16721f04c7b089166a46ec852ecb185682d210836d5105209511d98a11f"
+    },
+    {
+      "path": "v3/server/download_model.py",
+      "bytes": 1915,
+      "sha256": "8b58cfcff011d9da2fc65823c98dce3deeaaa13d55cb240d7cff5994c86a0241"
+    },
+    {
+      "path": "v3/server/nginx-http.conf",
+      "bytes": 125,
+      "sha256": "021170f90556caf8684d1834bcec7ab20d227b410952048ae6c83bcb4bde6b3d"
+    },
+    {
+      "path": "v3/server/nginx-location.conf",
+      "bytes": 950,
+      "sha256": "fbcb3bdbc2dd9f38a8f1c4d510d44e3e96edc9ad3d1014b12a7e726264a4863c"
+    },
+    {
+      "path": "v3/server/requirements.txt",
+      "bytes": 74,
+      "sha256": "1a1afd1360ab4f4c3fad5270d3fac013d54eec28ddc8c912a6dd4168713c4329"
+    },
+    {
+      "path": "v3/styles.css",
+      "bytes": 39783,
+      "sha256": "a494ecb1818c886f7113b878278991c465c551103d193d8a8475da8fa524580f"
+    },
+    {
+      "path": "v3/tests/build-single-file.test.js",
+      "bytes": 2119,
+      "sha256": "65baa4cb2a15bd7b750cf75b90800aadf95638b8e0cae10098d061db3423be6d"
+    },
+    {
+      "path": "v3/tests/dealing.test.js",
+      "bytes": 1507,
+      "sha256": "983737e7507c784f085f81c7a48f0a819ac4596268c190f8f847d3167a9a6598"
+    },
+    {
+      "path": "v3/tests/local-corrector.test.js",
+      "bytes": 8078,
+      "sha256": "da6a6f73ae74127057e25ab9cda590e628f621c5d0ff060e84335844a2d0f3a7"
+    },
+    {
+      "path": "v3/tests/model-cache.test.js",
+      "bytes": 3241,
+      "sha256": "81c92de46e6dfc59baef3adda40eda537c61f9dfa402f9da875e20f4d87d17b4"
+    },
+    {
+      "path": "v3/tests/rules.test.js",
+      "bytes": 3581,
+      "sha256": "12f4db6641d934d5c1e71e9090cffa8fea63bda40c7db5c97e668d6c5acadc59"
+    },
+    {
+      "path": "v3/tests/state.test.js",
+      "bytes": 4297,
+      "sha256": "27e3ebf595da7b2e7cf59a62b5097eb93aa8a5d6dafb2a32dbc477bfa0a371f1"
+    },
+    {
+      "path": "v3/tests/test_download_browser_model.py",
+      "bytes": 4152,
+      "sha256": "14a7aa22321485627fa7f6fef4e4898d867784e495132c70a2201dcf2f919a43"
+    },
+    {
+      "path": "v3/tests/voice.test.js",
+      "bytes": 8785,
+      "sha256": "3a31053ac14f0eb60b2acaf2d592791b9756242cb4480639badce7417eb881b6"
+    }
+  ]
+}

@@ -1,0 +1,1745 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#073d35">
+    <meta name="description" content="杭州麻将座位、发牌与计分助手">
+    <title>杭州麻将助手</title>
+    <style>
+:root {
+  --felt: #0b5a4a;
+  --felt-dark: #073d35;
+  --felt-light: #147461;
+  --tile: #fff9e8;
+  --tile-edge: #d7c99e;
+  --dealer: #d94836;
+  --dealer-dark: #a92f25;
+  --ink: #18332e;
+  --muted: #60756f;
+  --jade: #9bc7b8;
+  --wash: #edf4ef;
+  --positive: #08795f;
+  --negative: #bb382e;
+  --shadow: 0 16px 44px rgb(3 36 31 / 18%);
+  --tile-shadow: 0 6px 0 #c5b889, 0 12px 24px rgb(3 36 31 / 18%);
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  background: var(--felt-dark);
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+html { min-width: 320px; background: var(--felt-dark); }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 8%, rgb(155 199 184 / 13%), transparent 28rem),
+    var(--felt-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+[hidden] { display: none !important; }
+
+:focus-visible {
+  outline: 3px solid #f6b943;
+  outline-offset: 3px;
+}
+
+.app-shell { min-height: 100vh; }
+
+.screen {
+  width: min(100%, 1080px);
+  min-height: 100vh;
+  margin: 0 auto;
+}
+
+.setup-screen {
+  padding: max(28px, env(safe-area-inset-top)) 18px max(36px, env(safe-area-inset-bottom));
+  background: var(--wash);
+}
+
+.brand-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto 28px;
+}
+
+.brand-tile,
+.white-dragon,
+.dialog-tile {
+  display: grid;
+  flex: 0 0 auto;
+  width: 58px;
+  height: 72px;
+  place-items: center;
+  border: 1px solid #eadfbd;
+  border-radius: 9px;
+  color: var(--felt);
+  background: var(--tile);
+  box-shadow: 0 5px 0 var(--tile-edge), 0 10px 22px rgb(3 36 31 / 14%);
+  font: 700 35px/1 STKaiti, KaiTi, serif;
+}
+
+.eyebrow {
+  margin: 0 0 5px;
+  color: var(--felt);
+  font-size: .73rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+h1, h2, h3, p { margin-top: 0; }
+
+.brand-header h1,
+.dashboard-header h1 {
+  margin-bottom: 7px;
+  font-size: clamp(1.65rem, 5vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -.035em;
+}
+
+.lede {
+  max-width: 35rem;
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+#setup-form {
+  display: grid;
+  gap: 18px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.setup-fieldset,
+.choice-section {
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  border: 1px solid rgb(24 51 46 / 12%);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 75%);
+  box-shadow: 0 12px 40px rgb(3 36 31 / 7%);
+}
+
+.setup-fieldset > legend,
+.choice-section > legend {
+  padding: 0 8px;
+  font-weight: 850;
+  letter-spacing: -.01em;
+}
+
+.field-hint {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: .84rem;
+  line-height: 1.5;
+}
+
+.seat-setup-map {
+  position: relative;
+  width: min(100%, 390px);
+  aspect-ratio: 1;
+  margin: 18px auto 8px;
+  border: 12px solid var(--felt-dark);
+  border-radius: 24px;
+  background:
+    linear-gradient(90deg, transparent 49.7%, rgb(255 255 255 / 8%) 50%, transparent 50.3%),
+    linear-gradient(transparent 49.7%, rgb(255 255 255 / 8%) 50%, transparent 50.3%),
+    var(--felt);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%), var(--shadow);
+}
+
+.seat-input {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: min(46%, 174px);
+  gap: 5px;
+  padding: 9px;
+  border: 1px solid var(--tile-edge);
+  border-radius: 12px;
+  color: var(--ink);
+  background: var(--tile);
+  box-shadow: 0 5px 0 #c7ba8d, 0 9px 16px rgb(0 29 25 / 16%);
+}
+
+.seat-input > span:first-child {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.seat-input input[type="text"],
+.seat-input > input:not([type]) {
+  min-width: 0;
+  height: 44px;
+  padding: 0 9px;
+  border: 1px solid rgb(24 51 46 / 18%);
+  border-radius: 8px;
+  color: var(--ink);
+  background: white;
+  font-weight: 750;
+}
+
+.seat-input--top { top: -24px; left: 50%; transform: translateX(-50%); }
+.seat-input--bottom { bottom: -24px; left: 50%; transform: translateX(-50%); }
+.seat-input--left { top: 50%; left: -32px; transform: translateY(-50%); }
+.seat-input--right { top: 50%; right: -32px; transform: translateY(-50%); }
+
+.dealer-choice {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.dealer-choice input { accent-color: var(--dealer); }
+
+.setup-table-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  color: rgb(255 255 255 / 72%);
+}
+
+.setup-table-mark span {
+  font: 700 clamp(3.2rem, 15vw, 5rem)/1 STKaiti, KaiTi, serif;
+}
+.setup-table-mark small { margin-top: 4px; font-size: .7rem; font-weight: 750; }
+
+.rules-fieldset { padding-block: 10px; }
+
+.setting-row {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-bottom: 1px solid rgb(24 51 46 / 9%);
+}
+
+.setting-row:last-child { border-bottom: 0; }
+.setting-row span:first-child { display: grid; gap: 3px; }
+.setting-row small { color: var(--muted); line-height: 1.35; }
+.setting-row input[type="number"] {
+  width: 84px;
+  height: 44px;
+  padding: 0 10px;
+  border: 1px solid rgb(24 51 46 / 22%);
+  border-radius: 10px;
+  color: var(--ink);
+  background: white;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.switch { position: relative; width: 52px; height: 30px; }
+.switch input { position: absolute; opacity: 0; }
+.switch span {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #aab9b4;
+  transition: background .2s ease;
+}
+.switch span::after {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 22%);
+  content: "";
+  transition: transform .2s ease;
+}
+.switch input:checked + span { background: var(--felt); }
+.switch input:checked + span::after { transform: translateX(22px); }
+.switch input:focus-visible + span { outline: 3px solid #f6b943; outline-offset: 3px; }
+
+.form-error {
+  min-height: 1.35em;
+  margin: 0;
+  color: var(--negative);
+  font-size: .86rem;
+  font-weight: 750;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 13px;
+  font-weight: 850;
+  letter-spacing: -.01em;
+}
+
+.primary-button { color: white; background: var(--dealer); box-shadow: 0 5px 0 var(--dealer-dark); }
+.primary-button:hover:not(:disabled) { background: #e14f3d; }
+.primary-button:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--dealer-dark); }
+.secondary-button { border: 1px solid rgb(24 51 46 / 18%); color: var(--ink); background: var(--tile); box-shadow: 0 4px 0 var(--tile-edge); }
+.danger-button { color: white; background: var(--negative); }
+.start-button { width: 100%; }
+
+.dashboard-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: max(20px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom));
+  color: white;
+  background:
+    radial-gradient(circle at center 45%, rgb(155 199 184 / 10%), transparent 25rem),
+    var(--felt-dark);
+}
+
+.dashboard-header {
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+.dashboard-header .eyebrow { color: var(--jade); }
+.dashboard-header h1 { margin-bottom: 0; color: var(--tile); }
+
+.header-actions { display: flex; gap: 8px; }
+.icon-button {
+  position: relative;
+  display: grid;
+  min-width: 48px;
+  min-height: 54px;
+  place-items: center;
+  gap: 1px;
+  padding: 5px 7px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 10px;
+  color: var(--tile);
+  background: rgb(255 255 255 / 7%);
+}
+.icon-button > span:first-child { font: 700 1.12rem/1 STKaiti, KaiTi, serif; }
+.icon-button > span:nth-child(2) { color: var(--jade); font-size: .64rem; }
+.icon-button b {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 19px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  color: white;
+  background: var(--dealer);
+  font-size: .65rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-stage {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 390px;
+  place-items: center;
+  padding: 42px 0;
+}
+
+.mahjong-table {
+  position: relative;
+  width: min(73vw, 480px);
+  min-width: 245px;
+  aspect-ratio: 1;
+  border: clamp(12px, 3vw, 22px) solid #062f29;
+  border-radius: clamp(20px, 6vw, 38px);
+  background:
+    linear-gradient(90deg, transparent 49.8%, rgb(255 255 255 / 6%) 50%, transparent 50.2%),
+    linear-gradient(transparent 49.8%, rgb(255 255 255 / 6%) 50%, transparent 50.2%),
+    var(--felt);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 9%), 0 28px 65px rgb(0 16 14 / 42%);
+}
+
+.mahjong-table::after {
+  position: absolute;
+  inset: 13%;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 24%;
+  content: "";
+}
+
+.player-card {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  width: min(46%, 190px);
+  min-height: 74px;
+  align-content: center;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--tile-edge);
+  border-radius: 12px;
+  color: var(--ink);
+  background: var(--tile);
+  box-shadow: var(--tile-shadow);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.player-card--top { top: -30px; left: 50%; transform: translateX(-50%); }
+.player-card--bottom { bottom: -30px; left: 50%; transform: translateX(-50%); }
+.player-card--left { top: 50%; left: -42px; transform: translateY(-50%); }
+.player-card--right { top: 50%; right: -42px; transform: translateY(-50%); }
+
+.player-card.is-dealer {
+  border-color: #f3a89d;
+  box-shadow: 0 6px 0 #ba8d71, 0 0 0 4px var(--dealer), 0 18px 30px rgb(1 27 23 / 30%);
+}
+
+.seat-relation { grid-column: 1 / -1; color: var(--muted); font-size: .63rem; font-weight: 800; letter-spacing: .05em; }
+.player-card strong { min-width: 0; overflow: hidden; font-size: clamp(.86rem, 3.4vw, 1.05rem); text-overflow: ellipsis; white-space: nowrap; }
+.player-score { align-self: center; color: var(--felt); font-size: 1.07rem; font-variant-numeric: tabular-nums; font-weight: 900; }
+.dealer-badge {
+  position: absolute;
+  top: -15px;
+  right: -11px;
+  display: none;
+  width: 35px;
+  height: 41px;
+  place-items: center;
+  border: 2px solid #f9b5ab;
+  border-radius: 7px;
+  color: white;
+  background: var(--dealer);
+  box-shadow: 0 4px 0 var(--dealer-dark);
+  font: 700 1.35rem/1 STKaiti, KaiTi, serif;
+}
+.player-card.is-dealer .dealer-badge { display: grid; animation: dealer-arrive .3s ease-out both; }
+
+.table-center {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 48%;
+  transform: translate(-50%, -50%);
+  place-items: center;
+  text-align: center;
+}
+.white-dragon { width: 44px; height: 55px; font-size: 27px; box-shadow: 0 4px 0 var(--tile-edge), 0 9px 18px rgb(0 31 26 / 18%); }
+.table-center p { margin: 11px 0 2px; color: var(--jade); font-size: .62rem; font-weight: 800; letter-spacing: .08em; }
+.table-center strong { max-width: 100%; overflow: hidden; color: white; font-size: clamp(.9rem, 4vw, 1.3rem); text-overflow: ellipsis; white-space: nowrap; }
+.table-center > span:last-child { margin-top: 3px; color: #d9eee7; font-size: .66rem; }
+
+.round-actions {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 12px;
+  width: min(100%, 560px);
+  margin: 0 auto;
+}
+.round-actions .secondary-button { color: var(--ink); }
+.round-actions button span { font: 700 1.15rem/1 STKaiti, KaiTi, serif; }
+
+.rule-strip {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 20px 0 0;
+  color: var(--jade);
+  font-size: .66rem;
+}
+.rule-strip span + span::before { margin-right: 14px; color: rgb(155 199 184 / 35%); content: "·"; }
+
+body.drawer-open { overflow: hidden; }
+.drawer { position: fixed; z-index: 20; inset: 0; }
+.drawer-scrim { position: absolute; inset: 0; background: rgb(0 24 20 / 62%); opacity: 0; transition: opacity .18s ease; }
+.drawer-panel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  max-height: min(92vh, 820px);
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  background: var(--wash);
+  box-shadow: 0 -24px 70px rgb(0 20 17 / 40%);
+  transform: translateY(102%);
+  transition: transform .22s cubic-bezier(.2, .8, .2, 1);
+}
+.drawer.is-open .drawer-scrim { opacity: 1; }
+.drawer.is-open .drawer-panel { transform: translateY(0); }
+
+.drawer-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid rgb(24 51 46 / 10%);
+  background: rgb(255 255 255 / 72%);
+}
+.drawer-header h2 { margin-bottom: 0; font-size: 1.45rem; letter-spacing: -.03em; }
+.close-button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink);
+  background: rgb(24 51 46 / 8%);
+  font-size: 1.65rem;
+}
+.drawer-body { overflow-y: auto; padding: 18px 20px 28px; overscroll-behavior: contain; }
+.drawer-footer {
+  z-index: 2;
+  display: flex;
+  flex: 0 0 auto;
+  padding: 12px 20px max(14px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgb(24 51 46 / 12%);
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 -8px 24px rgb(3 36 31 / 8%);
+}
+.drawer-footer button { width: 100%; }
+
+.dice-picker { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 9px; }
+.dice-picker fieldset { min-width: 0; margin: 0; padding: 10px; border: 1px solid rgb(24 51 46 / 12%); border-radius: 14px; background: white; }
+.dice-picker legend { padding: 0 5px; color: var(--muted); font-size: .72rem; font-weight: 800; }
+.die-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.die-button {
+  display: grid;
+  min-width: 0;
+  min-height: 44px;
+  place-items: center;
+  border: 1px solid var(--tile-edge);
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--tile);
+  font-size: 1.55rem;
+}
+.die-button[aria-pressed="true"] { border-color: var(--dealer); color: var(--dealer); box-shadow: 0 0 0 2px var(--dealer); }
+.dice-plus { color: var(--muted); font-weight: 900; }
+.dice-sum { margin: 14px 0 18px; color: var(--muted); text-align: center; }
+.dice-sum strong { margin-left: 5px; color: var(--dealer); font-size: 1.8rem; font-variant-numeric: tabular-nums; }
+
+.mini-table {
+  position: relative;
+  width: min(82vw, 340px);
+  aspect-ratio: 1;
+  margin: 18px auto 28px;
+  border: 12px solid var(--felt-dark);
+  border-radius: 24px;
+  background: var(--felt);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 9%), var(--shadow);
+}
+.mini-seat {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: 42%;
+  min-height: 53px;
+  align-content: center;
+  padding: 7px 10px;
+  border: 2px solid transparent;
+  border-radius: 9px;
+  color: var(--ink);
+  background: var(--tile);
+  box-shadow: 0 4px 0 var(--tile-edge);
+  text-align: center;
+}
+.mini-seat strong { overflow: hidden; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+.mini-seat span { color: var(--muted); font-size: .62rem; }
+.mini-seat--top { top: -24px; left: 50%; transform: translateX(-50%); }
+.mini-seat--bottom { bottom: -24px; left: 50%; transform: translateX(-50%); }
+.mini-seat--left { top: 50%; left: -32px; transform: translateY(-50%); }
+.mini-seat--right { top: 50%; right: -32px; transform: translateY(-50%); }
+.mini-seat.is-dealer { box-shadow: 0 4px 0 var(--tile-edge), 0 0 0 3px var(--dealer); }
+.mini-seat.is-opening-wall { border-color: #f6b943; background: #fff0bc; }
+.mini-seat.is-opening-wall::after { position: absolute; right: -10px; bottom: -9px; padding: 3px 6px; border-radius: 5px; color: var(--felt-dark); background: #f6b943; content: "开"; font-weight: 900; }
+.mini-table-center { position: absolute; top: 50%; left: 50%; display: grid; transform: translate(-50%, -50%); place-items: center; color: white; text-align: center; }
+.mini-table-center b { font-size: 2.4rem; font-variant-numeric: tabular-nums; }
+.mini-table-center span { color: var(--jade); font-size: .65rem; }
+
+.guide-result { padding: 16px; border-left: 4px solid #f6b943; border-radius: 0 12px 12px 0; background: #fff4ce; font-weight: 780; line-height: 1.6; }
+.guide-steps { display: grid; gap: 11px; padding: 0; margin: 18px 0 0; counter-reset: steps; list-style: none; }
+.guide-steps li { position: relative; min-height: 32px; padding-left: 42px; color: var(--muted); line-height: 1.55; }
+.guide-steps li::before { position: absolute; top: -2px; left: 0; display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: white; background: var(--felt); content: counter(steps); counter-increment: steps; font-size: .75rem; font-weight: 900; }
+
+.settlement-body { display: grid; gap: 14px; }
+.choice-section { padding: 14px; border-radius: 14px; box-shadow: none; }
+.segmented-control { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.segmented-control button,
+.player-choice,
+.win-type-choice {
+  min-height: 46px;
+  border: 1px solid rgb(24 51 46 / 14%);
+  border-radius: 10px;
+  color: var(--ink);
+  background: white;
+  font-weight: 760;
+}
+.segmented-control button[aria-pressed="true"],
+.player-choice[aria-pressed="true"],
+.win-type-choice[aria-pressed="true"] {
+  border-color: var(--felt);
+  color: white;
+  background: var(--felt);
+  box-shadow: 0 0 0 2px rgb(11 90 74 / 18%);
+}
+.player-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.player-choice,
+.win-type-choice { display: grid; align-content: center; gap: 2px; padding: 8px; text-align: left; }
+.player-choice strong,
+.win-type-choice strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-choice small,
+.win-type-choice small { color: var(--muted); font-size: .68rem; font-weight: 650; }
+.player-choice[aria-pressed="true"] small,
+.win-type-choice[aria-pressed="true"] small { color: #d9eee7; }
+.win-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.win-type-choice { min-height: 56px; text-align: center; }
+.liability-toggle { margin-bottom: 10px; }
+
+.settlement-preview { overflow: hidden; border: 1px solid rgb(24 51 46 / 13%); border-radius: 15px; background: white; }
+.preview-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px; border-bottom: 1px solid rgb(24 51 46 / 10%); background: #f7faf8; }
+.preview-heading h3 { margin: 0; font-size: .95rem; }
+.preview-heading span { color: var(--muted); font-size: .68rem; text-align: right; }
+.preview-list { padding: 4px 14px; }
+.preview-row { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid rgb(24 51 46 / 8%); }
+.preview-row:last-child { border-bottom: 0; }
+.preview-row > span { display: grid; gap: 3px; }
+.preview-row small { color: var(--muted); font-size: .68rem; }
+.preview-row > b { font-size: 1.12rem; font-variant-numeric: tabular-nums; }
+.is-positive { color: var(--positive) !important; }
+.is-negative { color: var(--negative) !important; }
+
+.history-list { display: grid; gap: 12px; }
+.history-card { overflow: hidden; border: 1px solid rgb(24 51 46 / 12%); border-radius: 14px; background: white; }
+.history-heading { display: grid; gap: 3px; padding: 14px; border-bottom: 1px solid rgb(24 51 46 / 9%); }
+.history-heading h3 { margin: 0; font-size: .92rem; }
+.history-heading span { color: var(--muted); font-size: .71rem; }
+.history-deltas { display: grid; grid-template-columns: repeat(4, 1fr); }
+.history-deltas > span { display: grid; gap: 3px; padding: 11px 5px; border-right: 1px solid rgb(24 51 46 / 8%); text-align: center; }
+.history-deltas > span:last-child { border-right: 0; }
+.history-deltas small { overflow: hidden; color: var(--muted); font-size: .65rem; text-overflow: ellipsis; white-space: nowrap; }
+.history-deltas b { font-size: .82rem; font-variant-numeric: tabular-nums; }
+.empty-state { display: grid; min-height: 260px; place-items: center; align-content: center; color: var(--muted); text-align: center; }
+.empty-state > span { display: grid; width: 54px; height: 64px; place-items: center; border: 1px solid var(--tile-edge); border-radius: 8px; color: var(--felt); background: var(--tile); box-shadow: 0 4px 0 var(--tile-edge); font: 700 1.8rem/1 STKaiti, KaiTi, serif; }
+.empty-state strong { margin-top: 18px; color: var(--ink); }
+.empty-state p { max-width: 17rem; margin: 6px 0 0; font-size: .82rem; line-height: 1.5; }
+.danger-outline { color: var(--negative); }
+
+.confirm-dialog {
+  width: min(calc(100% - 36px), 420px);
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  color: var(--ink);
+  background: var(--wash);
+  box-shadow: 0 28px 80px rgb(0 20 17 / 46%);
+}
+.confirm-dialog::backdrop { background: rgb(0 24 20 / 68%); backdrop-filter: blur(3px); }
+.confirm-dialog form { display: grid; justify-items: center; padding: 28px 22px 22px; text-align: center; }
+.dialog-tile { width: 50px; height: 60px; color: var(--dealer); font-size: 27px; }
+.confirm-dialog h2 { margin: 22px 0 7px; }
+.confirm-dialog p { color: var(--muted); line-height: 1.5; }
+.dialog-actions { display: grid; width: 100%; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 8px; }
+
+.toast {
+  position: fixed;
+  z-index: 50;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  left: 50%;
+  max-width: calc(100vw - 36px);
+  padding: 11px 16px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 999px;
+  color: white;
+  background: #102e29;
+  box-shadow: 0 12px 34px rgb(0 15 13 / 34%);
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  transform: translate(-50%, 16px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+@keyframes dealer-arrive {
+  from { opacity: 0; transform: translateY(-8px) rotate(-5deg); }
+  to { opacity: 1; transform: translateY(0) rotate(0); }
+}
+
+@media (max-width: 430px) {
+  .setup-fieldset { padding-inline: 12px; }
+  .seat-setup-map { width: min(76vw, 310px); margin-block: 25px; }
+  .seat-input { width: 49%; padding: 7px; }
+  .seat-input--left { left: -25px; }
+  .seat-input--right { right: -25px; }
+  .table-stage { min-height: 380px; }
+  .mahjong-table { width: min(70vw, 300px); }
+  .player-card { width: 49%; min-height: 69px; padding: 9px; }
+  .player-card--left { left: -35px; }
+  .player-card--right { right: -35px; }
+  .win-type-grid { grid-template-columns: 1fr 1fr; }
+  .drawer-header, .drawer-body, .drawer-footer { padding-right: 16px; padding-left: 16px; }
+}
+
+@media (min-width: 760px) {
+  .setup-screen { padding-inline: 36px; }
+  .dashboard-screen { padding: 32px 40px; }
+  .table-stage { min-height: 600px; }
+  .round-actions { margin-bottom: 10px; }
+  .drawer-panel { left: auto; width: min(560px, 48vw); height: 100%; max-height: none; border-radius: 24px 0 0 24px; transform: translateX(102%); }
+  .drawer.is-open .drawer-panel { transform: translateX(0); }
+  .drawer-panel--wide { width: min(680px, 58vw); }
+  .drawer-scrim { backdrop-filter: blur(2px); }
+}
+
+@media (min-width: 1000px) {
+  .setup-screen { border-right: 1px solid rgb(255 255 255 / 9%); border-left: 1px solid rgb(255 255 255 / 9%); }
+  .dashboard-header { max-width: 920px; width: 100%; margin-inline: auto; }
+  .rule-strip { margin-bottom: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+    </style>
+
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="setup-view" class="screen setup-screen" aria-labelledby="setup-title">
+        <header class="brand-header">
+          <div class="brand-tile" aria-hidden="true">白</div>
+          <div>
+            <p class="eyebrow">白板财神 · 杭州打法</p>
+            <h1 id="setup-title">摆好四个人的位置</h1>
+            <p class="lede">按真实座位填名字。开局后位置不再移动，只移动庄牌。</p>
+          </div>
+        </header>
+
+        <form id="setup-form" novalidate>
+          <fieldset class="setup-fieldset">
+            <legend>谁坐哪边</legend>
+            <p class="field-hint">手机朝向你平时操作的方向，上下左右对应真实麻将桌。</p>
+            <div class="seat-setup-map" aria-label="四人真实座位">
+              <label class="seat-input seat-input--top">
+                <span>上方</span>
+                <input id="player-top" name="player-top" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="top"> 首局庄家</span>
+              </label>
+              <label class="seat-input seat-input--right">
+                <span>右方</span>
+                <input id="player-right" name="player-right" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="right"> 首局庄家</span>
+              </label>
+              <div class="setup-table-mark" aria-hidden="true">
+                <span>庄</span>
+                <small>选一位首庄</small>
+              </div>
+              <label class="seat-input seat-input--bottom">
+                <span>下方</span>
+                <input id="player-bottom" name="player-bottom" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="bottom" checked> 首局庄家</span>
+              </label>
+              <label class="seat-input seat-input--left">
+                <span>左方</span>
+                <input id="player-left" name="player-left" maxlength="12" autocomplete="off" placeholder="玩家姓名">
+                <span class="dealer-choice"><input type="radio" name="dealer-seat" value="left"> 首局庄家</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="setup-fieldset rules-fieldset">
+            <legend>这场怎么计分</legend>
+            <label class="setting-row" for="base-score">
+              <span><strong>底分</strong><small>所有牌型从这个分数起算</small></span>
+              <input id="base-score" name="base-score" type="number" inputmode="decimal" min="0.01" step="0.01" value="1">
+            </label>
+            <label class="setting-row switch-row" for="liability-enabled">
+              <span><strong>三摊承包</strong><small>触发时由承包者支付三家总额</small></span>
+              <span class="switch"><input id="liability-enabled" type="checkbox" checked><span aria-hidden="true"></span></span>
+            </label>
+          </fieldset>
+
+          <p id="setup-error" class="form-error" role="alert"></p>
+          <button id="start-match" class="primary-button start-button" type="submit">开始这场牌</button>
+        </form>
+      </section>
+
+      <section id="dashboard-view" class="screen dashboard-screen" aria-labelledby="round-label" hidden>
+        <header class="dashboard-header">
+          <div>
+            <p id="round-label" class="eyebrow">第 1 局</p>
+            <h1 id="dealer-tier">平庄 ×2</h1>
+          </div>
+          <nav class="header-actions" aria-label="牌局管理">
+            <button id="open-history" class="icon-button" type="button">
+              <span aria-hidden="true">局</span>
+              <span>记录</span>
+              <b data-history-count>0</b>
+            </button>
+            <button id="open-reset" class="icon-button" type="button"><span aria-hidden="true">新</span><span>重开</span></button>
+          </nav>
+        </header>
+
+        <section class="table-stage" aria-label="真实座位与当前分数">
+          <div class="mahjong-table">
+            <article class="player-card player-card--top" data-seat="top">
+              <span class="seat-relation" data-seat-relation>上方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--right" data-seat="right">
+              <span class="seat-relation" data-seat-relation>右方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--bottom" data-seat="bottom">
+              <span class="seat-relation" data-seat-relation>下方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+            <article class="player-card player-card--left" data-seat="left">
+              <span class="seat-relation" data-seat-relation>左方</span>
+              <strong data-player-name>玩家</strong>
+              <span class="player-score" data-player-score>+0</span>
+              <span class="dealer-badge" aria-label="庄家">庄</span>
+            </article>
+
+            <div class="table-center">
+              <span class="white-dragon" aria-hidden="true">白</span>
+              <p>当前庄家</p>
+              <strong id="center-dealer-name">玩家</strong>
+              <span id="center-tier-label">平庄 · ×2</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="round-actions" aria-label="本局操作">
+          <button id="open-deal-guide" class="secondary-button" type="button"><span aria-hidden="true">⚄</span> 发牌向导</button>
+          <button id="open-settlement" class="primary-button" type="button"><span aria-hidden="true">和</span> 结束本局</button>
+        </section>
+
+        <p class="rule-strip"><span>白板财神</span><span>只算胡法</span><span id="liability-status">三摊承包开启</span></p>
+      </section>
+    </main>
+
+    <section id="deal-drawer" class="drawer" aria-labelledby="deal-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="deal-drawer"></div>
+      <div class="drawer-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow">按真实座位显示</p><h2 id="deal-title">骰子与发牌</h2></div>
+          <button class="close-button" type="button" data-close-drawer="deal-drawer" aria-label="关闭发牌向导">×</button>
+        </header>
+        <div class="drawer-body">
+          <div class="dice-picker">
+            <fieldset><legend>第一颗骰子</legend><div id="die-one-options" class="die-options"></div></fieldset>
+            <span class="dice-plus" aria-hidden="true">＋</span>
+            <fieldset><legend>第二颗骰子</legend><div id="die-two-options" class="die-options"></div></fieldset>
+          </div>
+          <p class="dice-sum">总点数 <strong id="dice-total">2</strong></p>
+
+          <div id="deal-seat-map" class="mini-table" aria-label="开门位置示意"></div>
+          <div id="opening-wall-result" class="guide-result"></div>
+          <ol id="deal-steps" class="guide-steps"></ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="settlement-drawer" class="drawer" aria-labelledby="settlement-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="settlement-drawer"></div>
+      <div class="drawer-panel drawer-panel--wide">
+        <header class="drawer-header">
+          <div><p class="eyebrow">确认后同时换庄</p><h2 id="settlement-title">结束本局</h2></div>
+          <button class="close-button" type="button" data-close-drawer="settlement-drawer" aria-label="关闭结算">×</button>
+        </header>
+        <div class="drawer-body settlement-body">
+          <fieldset class="choice-section"><legend>本局结果</legend><div class="segmented-control"><button type="button" data-outcome="win" aria-pressed="true">有人胡</button><button type="button" data-outcome="draw" aria-pressed="false">流局</button></div></fieldset>
+          <fieldset id="winner-section" class="choice-section"><legend>谁胡了</legend><div id="winner-options" class="player-choice-grid"></div></fieldset>
+          <fieldset id="win-type-section" class="choice-section"><legend>怎么胡</legend><div id="win-type-options" class="win-type-grid"></div></fieldset>
+          <fieldset id="liability-section" class="choice-section"><legend>三摊承包</legend><div class="segmented-control liability-toggle"><button type="button" data-liability="false" aria-pressed="true">没有承包</button><button type="button" data-liability="true" aria-pressed="false">触发承包</button></div><div id="liable-player-wrap" hidden><p class="field-hint">谁来承包三家总额？</p><div id="liable-player-options" class="player-choice-grid"></div></div></fieldset>
+
+          <section class="settlement-preview" aria-labelledby="preview-title">
+            <div class="preview-heading"><h3 id="preview-title">结算预览</h3><span id="preview-summary">请选择胡牌者</span></div>
+            <div id="settlement-preview-list" class="preview-list"></div>
+          </section>
+          <p id="settlement-error" class="form-error" role="alert"></p>
+        </div>
+        <footer class="drawer-footer"><button id="confirm-settlement" class="primary-button" type="button" disabled>确认结算并开下一局</button></footer>
+      </div>
+    </section>
+
+    <section id="history-drawer" class="drawer" aria-labelledby="history-title" hidden>
+      <div class="drawer-scrim" data-close-drawer="history-drawer"></div>
+      <div class="drawer-panel">
+        <header class="drawer-header">
+          <div><p class="eyebrow">每局都有计算明细</p><h2 id="history-title">牌局记录</h2></div>
+          <button class="close-button" type="button" data-close-drawer="history-drawer" aria-label="关闭牌局记录">×</button>
+        </header>
+        <div class="drawer-body"><div id="history-list" class="history-list"></div></div>
+        <footer class="drawer-footer"><button id="undo-round" class="secondary-button danger-outline" type="button">撤销上一局</button></footer>
+      </div>
+    </section>
+
+    <dialog id="reset-dialog" class="confirm-dialog">
+      <form method="dialog">
+        <span class="dialog-tile" aria-hidden="true">新</span>
+        <h2>重新开一场？</h2>
+        <p>当前四人的分数和牌局记录会从本机清除。</p>
+        <div class="dialog-actions"><button value="cancel" class="secondary-button">继续当前牌局</button><button id="confirm-reset" value="confirm" class="danger-button">清除并重开</button></div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <script>
+(() => {
+'use strict';
+const WIN_TYPES = [
+  ['plain', '平胡', 1],
+  ['sevenPairs', '七对', 2],
+  ['baotou', '爆头', 2],
+  ['kongDraw', '杠开', 2],
+  ['luxuryPairs', '豪华七对', 4],
+  ['caipiao', '财飘', 4],
+  ['kongBaotou', '杠爆', 4],
+  ['doubleLuxuryPairs', '双豪华七对', 8],
+  ['kongPiao', '杠飘', 8],
+  ['piaoKong', '飘杠', 8],
+  ['tripleLuxuryPairs', '三豪华七对', 16],
+  ['doubleCaipiao', '双财飘', 16],
+].map(([id, label, multiplier]) => ({ id, label, multiplier }));
+
+function getDealerTier(dealerRun) {
+  if (!Number.isInteger(dealerRun) || dealerRun < 1) {
+    throw new Error('连庄局数必须至少为 1');
+  }
+  if (dealerRun === 1) return { label: '平庄', multiplier: 2 };
+  if (dealerRun === 2) return { label: '一老', multiplier: 4 };
+  return { label: '二老', multiplier: 8 };
+}
+
+function calculateSettlement(input) {
+  const {
+    players,
+    dealerId,
+    dealerRun,
+    baseScore,
+    winnerId,
+    winTypeId,
+    liablePlayerId = null,
+  } = input;
+  const ids = players?.map(({ id }) => id) ?? [];
+
+  if (ids.length !== 4 || new Set(ids).size !== 4) {
+    throw new Error('必须有四名不同的玩家');
+  }
+  if (!ids.includes(dealerId) || !ids.includes(winnerId)) {
+    throw new Error('庄家或胡家无效');
+  }
+  if (!(Number(baseScore) > 0)) {
+    throw new Error('底分必须大于 0');
+  }
+  if (liablePlayerId === winnerId || (liablePlayerId && !ids.includes(liablePlayerId))) {
+    throw new Error('承包者无效');
+  }
+
+  const winType = WIN_TYPES.find(({ id }) => id === winTypeId);
+  if (!winType) throw new Error('胡牌方式无效');
+
+  const dealerTier = getDealerTier(dealerRun);
+  const deltas = Object.fromEntries(ids.map((id) => [id, 0]));
+  const details = [];
+  let totalWon = 0;
+
+  for (const loserId of ids.filter((id) => id !== winnerId)) {
+    const relationMultiplier = loserId === dealerId || winnerId === dealerId
+      ? dealerTier.multiplier
+      : 1;
+    const amount = Number(baseScore) * winType.multiplier * relationMultiplier;
+    totalWon += amount;
+    details.push({
+      loserId,
+      amount,
+      baseScore: Number(baseScore),
+      winMultiplier: winType.multiplier,
+      relationMultiplier,
+    });
+    deltas[loserId] = -amount;
+  }
+
+  if (liablePlayerId) {
+    for (const id of ids) deltas[id] = 0;
+    deltas[liablePlayerId] = -totalWon;
+  }
+  deltas[winnerId] = totalWon;
+
+  return { deltas, details, totalWon, winType, dealerTier };
+}
+
+function getNextRoundState({ dealerId, dealerRun, outcome, winnerId }) {
+  getDealerTier(dealerRun);
+  if (outcome === 'draw') return { dealerId, dealerRun };
+  if (outcome !== 'win' || !winnerId) throw new Error('本局结果无效');
+  return winnerId === dealerId
+    ? { dealerId, dealerRun: dealerRun + 1 }
+    : { dealerId: winnerId, dealerRun: 1 };
+}
+
+
+// Counter-clockwise around the table as seen from above. For a player seated
+// at the bottom of the screen, the next player is physically on their right.
+const TURN_ORDER = ['top', 'left', 'bottom', 'right'];
+
+function getRelativeSeats(dealerSeat) {
+  const index = TURN_ORDER.indexOf(dealerSeat);
+  if (index < 0) throw new Error('庄家座位无效');
+  return {
+    dealer: dealerSeat,
+    next: TURN_ORDER[(index + 1) % 4],
+    opposite: TURN_ORDER[(index + 2) % 4],
+    previous: TURN_ORDER[(index + 3) % 4],
+  };
+}
+
+function getDealGuide({ dealerSeat, dieOne, dieTwo }) {
+  for (const die of [dieOne, dieTwo]) {
+    if (!Number.isInteger(die) || die < 1 || die > 6) {
+      throw new Error('骰子点数必须是 1 到 6 的整数');
+    }
+  }
+
+  const dealerIndex = TURN_ORDER.indexOf(dealerSeat);
+  if (dealerIndex < 0) throw new Error('庄家座位无效');
+
+  const total = dieOne + dieTwo;
+  const openingSeat = TURN_ORDER[(dealerIndex + total - 1) % 4];
+  const dealOrder = Array.from(
+    { length: 4 },
+    (_, index) => TURN_ORDER[(dealerIndex + index) % 4],
+  );
+
+  return {
+    dealerSeat,
+    dieOne,
+    dieTwo,
+    total,
+    openingSeat,
+    skippedStacks: total,
+    wallCountDirection: 'right-to-left',
+    dealOrder,
+    finalCounts: { dealer: 14, others: 13 },
+  };
+}
+
+
+
+const SEATS = ['top', 'right', 'bottom', 'left'];
+const STORAGE_KEY = 'hangzhou-mahjong-match-v1';
+
+const clone = (value) => structuredClone(value);
+
+function createMatch({ names, dealerSeat, baseScore, liabilityEnabled }) {
+  const cleanNames = Array.isArray(names)
+    ? names.map((name) => String(name).trim())
+    : [];
+
+  if (cleanNames.length !== 4 || cleanNames.some((name) => !name)) {
+    throw new Error('请输入四位玩家的姓名');
+  }
+  if (new Set(cleanNames).size !== 4) {
+    throw new Error('四位玩家需要使用不同的姓名');
+  }
+  if (!SEATS.includes(dealerSeat)) {
+    throw new Error('请选择首局庄家');
+  }
+  if (!(Number(baseScore) > 0)) {
+    throw new Error('底分必须大于 0');
+  }
+
+  const players = SEATS.map((seat, index) => ({
+    id: `player-${seat}`,
+    seat,
+    name: cleanNames[index],
+    score: 0,
+  }));
+
+  return {
+    version: 1,
+    players,
+    dealerId: `player-${dealerSeat}`,
+    dealerRun: 1,
+    baseScore: Number(baseScore),
+    liabilityEnabled: Boolean(liabilityEnabled),
+    roundNumber: 1,
+    history: [],
+    startedAt: new Date().toISOString(),
+  };
+}
+
+function settleRound(match, roundInput) {
+  validateMatch(match);
+  const before = clone({
+    players: match.players,
+    dealerId: match.dealerId,
+    dealerRun: match.dealerRun,
+    roundNumber: match.roundNumber,
+  });
+  const input = clone(roundInput);
+  let deltas = Object.fromEntries(match.players.map(({ id }) => [id, 0]));
+  let calculation = null;
+
+  if (input.outcome === 'win') {
+    if (!match.liabilityEnabled && input.liablePlayerId) {
+      throw new Error('本场未开启三摊承包');
+    }
+    calculation = calculateSettlement({
+      players: match.players,
+      dealerId: match.dealerId,
+      dealerRun: match.dealerRun,
+      baseScore: match.baseScore,
+      winnerId: input.winnerId,
+      winTypeId: input.winTypeId,
+      liablePlayerId: input.liablePlayerId,
+    });
+    deltas = calculation.deltas;
+  } else if (input.outcome !== 'draw') {
+    throw new Error('本局结果无效');
+  }
+
+  const next = getNextRoundState({
+    dealerId: match.dealerId,
+    dealerRun: match.dealerRun,
+    outcome: input.outcome,
+    winnerId: input.winnerId,
+  });
+  const players = match.players.map((player) => ({
+    ...player,
+    score: player.score + deltas[player.id],
+  }));
+  const historyEntry = {
+    roundNumber: match.roundNumber,
+    settledAt: new Date().toISOString(),
+    input,
+    before,
+    deltas,
+    calculation,
+  };
+  const settled = {
+    ...match,
+    players,
+    ...next,
+    roundNumber: match.roundNumber + 1,
+    history: [...match.history, historyEntry],
+  };
+  validateMatch(settled);
+  return settled;
+}
+
+function undoLastRound(match) {
+  validateMatch(match);
+  if (!match.history.length) {
+    throw new Error('还没有可撤销的牌局');
+  }
+  const before = clone(match.history.at(-1).before);
+  return {
+    ...clone(match),
+    ...before,
+    history: clone(match.history.slice(0, -1)),
+  };
+}
+
+function validateMatch(match) {
+  if (!match || match.version !== 1 || !Array.isArray(match.players)) {
+    throw new Error('牌局数据已损坏');
+  }
+  const ids = match.players.map(({ id }) => id);
+  const seats = match.players.map(({ seat }) => seat);
+  const names = match.players.map(({ name }) => name);
+  if (
+    ids.length !== 4
+    || new Set(ids).size !== 4
+    || new Set(seats).size !== 4
+    || !SEATS.every((seat) => seats.includes(seat))
+    || names.some((name) => typeof name !== 'string' || !name.trim())
+    || !ids.includes(match.dealerId)
+    || !Number.isInteger(match.dealerRun)
+    || match.dealerRun < 1
+    || !Number.isInteger(match.roundNumber)
+    || match.roundNumber < 1
+    || !(Number(match.baseScore) > 0)
+    || !Array.isArray(match.history)
+  ) {
+    throw new Error('牌局数据已损坏');
+  }
+  if (match.players.reduce((sum, player) => sum + Number(player.score), 0) !== 0) {
+    throw new Error('牌局总分必须为 0');
+  }
+  return true;
+}
+
+function createStorage(storage = localStorage) {
+  return {
+    save(match) {
+      validateMatch(match);
+      storage.setItem(STORAGE_KEY, JSON.stringify(match));
+    },
+    load() {
+      const raw = storage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      validateMatch(parsed);
+      return parsed;
+    },
+    clear() {
+      storage.removeItem(STORAGE_KEY);
+    },
+  };
+}
+
+
+
+
+
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const storage = createStorage();
+const seatLabel = { top: '上方', right: '右方', bottom: '下方', left: '左方' };
+const diceFace = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+const scoreFormatter = new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 2 });
+
+let match = null;
+let storageError = '';
+let toastTimer;
+let dieOne = 1;
+let dieTwo = 1;
+let settlementDraft = newSettlementDraft();
+const drawerOpeners = new Map();
+
+try {
+  match = storage.load();
+} catch (error) {
+  storageError = '本机保存的牌局无法读取。请重新开一场，原始数据不会被静默修改。';
+}
+
+function newSettlementDraft() {
+  return {
+    outcome: 'win',
+    winnerId: null,
+    winTypeId: 'plain',
+    liability: false,
+    liablePlayerId: null,
+  };
+}
+
+function playerById(id, source = match) {
+  return source?.players.find((player) => player.id === id);
+}
+
+function formatScore(value, withSign = true) {
+  const number = Number(value);
+  const sign = withSign && number > 0 ? '+' : '';
+  return `${sign}${scoreFormatter.format(number)}`;
+}
+
+function renderApp() {
+  const hasMatch = Boolean(match);
+  $('#setup-view').hidden = hasMatch;
+  $('#dashboard-view').hidden = !hasMatch;
+  if (hasMatch) renderDashboard();
+  if (!hasMatch && storageError) $('#setup-error').textContent = storageError;
+}
+
+function renderDashboard() {
+  const dealer = playerById(match.dealerId);
+  const tier = getDealerTier(match.dealerRun);
+  const relatives = getRelativeSeats(dealer.seat);
+  const relationBySeat = {
+    [relatives.dealer]: '庄家',
+    [relatives.next]: '下家',
+    [relatives.opposite]: '对家',
+    [relatives.previous]: '上家',
+  };
+
+  $('#round-label').textContent = `第 ${match.roundNumber} 局`;
+  $('#dealer-tier').textContent = `${dealer.name} · ${tier.label} ×${tier.multiplier}`;
+  $('#center-dealer-name').textContent = dealer.name;
+  $('#center-tier-label').textContent = `${tier.label} · 庄闲 ×${tier.multiplier}`;
+  $('[data-history-count]').textContent = String(match.history.length);
+  $('#liability-status').textContent = match.liabilityEnabled ? '三摊承包开启' : '不算三摊承包';
+
+  for (const player of match.players) {
+    const card = $(`[data-seat="${player.seat}"]`);
+    $('[data-player-name]', card).textContent = player.name;
+    $('[data-player-score]', card).textContent = formatScore(player.score);
+    $('[data-seat-relation]', card).textContent = `${seatLabel[player.seat]} · ${relationBySeat[player.seat]}`;
+    card.classList.toggle('is-dealer', player.id === match.dealerId);
+    card.classList.toggle('is-leading', player.score === Math.max(...match.players.map(({ score }) => score)) && player.score > 0);
+  }
+}
+
+function showToast(message) {
+  const toast = $('#toast');
+  toast.textContent = message;
+  toast.classList.add('is-visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2400);
+}
+
+function openDrawer(id, opener) {
+  drawerOpeners.set(id, opener ?? document.activeElement);
+  const drawer = document.getElementById(id);
+  drawer.hidden = false;
+  document.body.classList.add('drawer-open');
+  requestAnimationFrame(() => drawer.classList.add('is-open'));
+  setTimeout(() => $('button:not([disabled])', drawer)?.focus(), 80);
+}
+
+function closeDrawer(id) {
+  const drawer = document.getElementById(id);
+  if (drawer.hidden) return;
+  drawer.classList.remove('is-open');
+  setTimeout(() => {
+    drawer.hidden = true;
+    if (!$$('.drawer.is-open').length) document.body.classList.remove('drawer-open');
+    drawerOpeners.get(id)?.focus();
+  }, 180);
+}
+
+function createChoiceButton({ label, meta, selected, onClick, className = '' }) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = className;
+  button.setAttribute('aria-pressed', String(selected));
+  const strong = document.createElement('strong');
+  strong.textContent = label;
+  button.append(strong);
+  if (meta) {
+    const small = document.createElement('small');
+    small.textContent = meta;
+    button.append(small);
+  }
+  button.addEventListener('click', onClick);
+  return button;
+}
+
+function buildDiceOptions() {
+  for (const [targetId, dieKey] of [['die-one-options', 'one'], ['die-two-options', 'two']]) {
+    const target = document.getElementById(targetId);
+    target.innerHTML = '';
+    for (let value = 1; value <= 6; value += 1) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'die-button';
+      button.dataset.die = dieKey;
+      button.dataset.value = String(value);
+      button.setAttribute('aria-label', `${value} 点`);
+      button.textContent = diceFace[value];
+      button.addEventListener('click', () => {
+        if (dieKey === 'one') dieOne = value;
+        else dieTwo = value;
+        renderDealGuide();
+      });
+      target.append(button);
+    }
+  }
+}
+
+function renderDealGuide() {
+  const dealer = playerById(match.dealerId);
+  const guide = getDealGuide({ dealerSeat: dealer.seat, dieOne, dieTwo });
+  $$('.die-button').forEach((button) => {
+    const selected = button.dataset.die === 'one'
+      ? Number(button.dataset.value) === dieOne
+      : Number(button.dataset.value) === dieTwo;
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  $('#dice-total').textContent = String(guide.total);
+
+  const miniTable = $('#deal-seat-map');
+  miniTable.innerHTML = '';
+  for (const seat of SEATS) {
+    const player = match.players.find((item) => item.seat === seat);
+    const marker = document.createElement('div');
+    marker.className = `mini-seat mini-seat--${seat}`;
+    marker.classList.toggle('is-dealer', seat === guide.dealerSeat);
+    marker.classList.toggle('is-opening-wall', seat === guide.openingSeat);
+    const name = document.createElement('strong');
+    name.textContent = player.name;
+    const role = document.createElement('span');
+    role.textContent = seat === guide.openingSeat ? '从这里开门' : seat === guide.dealerSeat ? '庄家' : seatLabel[seat];
+    marker.append(name, role);
+    miniTable.append(marker);
+  }
+  const center = document.createElement('div');
+  center.className = 'mini-table-center';
+  center.innerHTML = `<b>${guide.total}</b><span>从右往左数墩</span>`;
+  miniTable.append(center);
+
+  const openingPlayer = match.players.find((player) => player.seat === guide.openingSeat);
+  $('#opening-wall-result').textContent = `从 ${openingPlayer.name} 面前的牌墙开门，从右往左数过 ${guide.skippedStacks} 墩，从下一墩开始拿牌。`;
+
+  const orderNames = guide.dealOrder.map((seat) => match.players.find((player) => player.seat === seat).name);
+  const steps = [
+    `${orderNames.join(' → ')}，依次每人拿 4 张。`,
+    '按同样顺序共拿三轮，每人先拿到 12 张。',
+    `${dealer.name} 跳牌拿 2 张，其余三家依次各拿 1 张。`,
+    `最后 ${dealer.name} 14 张，其他人各 13 张，由庄家先出牌。`,
+  ];
+  const list = $('#deal-steps');
+  list.innerHTML = '';
+  for (const text of steps) {
+    const item = document.createElement('li');
+    item.textContent = text;
+    list.append(item);
+  }
+}
+
+function renderSettlementChoices() {
+  $$('[data-outcome]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(button.dataset.outcome === settlementDraft.outcome));
+  });
+  const isDraw = settlementDraft.outcome === 'draw';
+  $('#winner-section').hidden = isDraw;
+  $('#win-type-section').hidden = isDraw;
+  $('#liability-section').hidden = isDraw || !match.liabilityEnabled;
+
+  const winnerTarget = $('#winner-options');
+  winnerTarget.innerHTML = '';
+  for (const player of match.players) {
+    winnerTarget.append(createChoiceButton({
+      label: player.name,
+      meta: player.id === match.dealerId ? '当前庄家' : seatLabel[player.seat],
+      selected: settlementDraft.winnerId === player.id,
+      onClick: () => {
+        settlementDraft.winnerId = player.id;
+        if (settlementDraft.liablePlayerId === player.id) settlementDraft.liablePlayerId = null;
+        renderSettlementChoices();
+      },
+      className: 'player-choice',
+    }));
+  }
+
+  const typeTarget = $('#win-type-options');
+  typeTarget.innerHTML = '';
+  for (const winType of WIN_TYPES) {
+    typeTarget.append(createChoiceButton({
+      label: winType.label,
+      meta: `×${winType.multiplier}`,
+      selected: settlementDraft.winTypeId === winType.id,
+      onClick: () => {
+        settlementDraft.winTypeId = winType.id;
+        renderSettlementChoices();
+      },
+      className: 'win-type-choice',
+    }));
+  }
+
+  $$('[data-liability]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(String(settlementDraft.liability) === button.dataset.liability));
+  });
+  $('#liable-player-wrap').hidden = !settlementDraft.liability;
+  const liableTarget = $('#liable-player-options');
+  liableTarget.innerHTML = '';
+  for (const player of match.players.filter(({ id }) => id !== settlementDraft.winnerId)) {
+    liableTarget.append(createChoiceButton({
+      label: player.name,
+      meta: player.id === match.dealerId ? '当前庄家' : seatLabel[player.seat],
+      selected: settlementDraft.liablePlayerId === player.id,
+      onClick: () => {
+        settlementDraft.liablePlayerId = player.id;
+        renderSettlementChoices();
+      },
+      className: 'player-choice',
+    }));
+  }
+  renderSettlementPreview();
+}
+
+function renderSettlementPreview() {
+  const target = $('#settlement-preview-list');
+  const confirmButton = $('#confirm-settlement');
+  const error = $('#settlement-error');
+  target.innerHTML = '';
+  error.textContent = '';
+  let result = null;
+
+  if (settlementDraft.outcome === 'win') {
+    if (!settlementDraft.winnerId) {
+      error.textContent = '先选择本局谁胡了。';
+    } else if (settlementDraft.liability && !settlementDraft.liablePlayerId) {
+      error.textContent = '请选择三摊承包者。';
+    } else {
+      try {
+        result = calculateSettlement({
+          players: match.players,
+          dealerId: match.dealerId,
+          dealerRun: match.dealerRun,
+          baseScore: match.baseScore,
+          winnerId: settlementDraft.winnerId,
+          winTypeId: settlementDraft.winTypeId,
+          liablePlayerId: settlementDraft.liability ? settlementDraft.liablePlayerId : null,
+        });
+      } catch (calculationError) {
+        error.textContent = calculationError.message;
+      }
+    }
+  }
+
+  const deltas = result?.deltas ?? Object.fromEntries(match.players.map(({ id }) => [id, 0]));
+  for (const player of match.players) {
+    const row = document.createElement('div');
+    row.className = 'preview-row';
+    const identity = document.createElement('span');
+    const name = document.createElement('strong');
+    name.textContent = player.name;
+    const formula = document.createElement('small');
+    if (settlementDraft.outcome === 'draw') {
+      formula.textContent = '流局不计分';
+    } else if (!result) {
+      formula.textContent = '等待选择';
+    } else if (player.id === settlementDraft.winnerId) {
+      formula.textContent = settlementDraft.liability ? '收取承包总额' : '收取三家合计';
+    } else if (settlementDraft.liability) {
+      formula.textContent = player.id === settlementDraft.liablePlayerId
+        ? '三摊承包：支付三家总额'
+        : `由 ${playerById(settlementDraft.liablePlayerId).name} 承包`;
+    } else {
+      const detail = result.details.find(({ loserId }) => loserId === player.id);
+      formula.textContent = `${formatScore(detail.baseScore, false)} × 胡法 ${detail.winMultiplier} × 庄闲 ${detail.relationMultiplier}`;
+    }
+    identity.append(name, formula);
+    const delta = document.createElement('b');
+    delta.className = deltas[player.id] > 0 ? 'is-positive' : deltas[player.id] < 0 ? 'is-negative' : '';
+    delta.textContent = formatScore(deltas[player.id]);
+    row.append(identity, delta);
+    target.append(row);
+  }
+
+  if (settlementDraft.outcome === 'draw') {
+    $('#preview-summary').textContent = '庄家、老数和分数都不变';
+    confirmButton.disabled = false;
+  } else if (result) {
+    const winner = playerById(settlementDraft.winnerId);
+    $('#preview-summary').textContent = `${winner.name} ${result.winType.label}，共得 ${formatScore(result.totalWon, false)} 分`;
+    confirmButton.disabled = false;
+  } else {
+    $('#preview-summary').textContent = '补全上面的选择后再确认';
+    confirmButton.disabled = true;
+  }
+}
+
+function renderHistory() {
+  const target = $('#history-list');
+  target.innerHTML = '';
+  $('#undo-round').disabled = match.history.length === 0;
+  if (!match.history.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = '<span aria-hidden="true">局</span><strong>还没有结算记录</strong><p>完成第一局后，计算明细会出现在这里。</p>';
+    target.append(empty);
+    return;
+  }
+
+  for (const entry of [...match.history].reverse()) {
+    const card = document.createElement('article');
+    card.className = 'history-card';
+    const beforeDealer = playerById(entry.before.dealerId, entry.before);
+    const beforeTier = getDealerTier(entry.before.dealerRun);
+    const heading = document.createElement('div');
+    heading.className = 'history-heading';
+    const title = document.createElement('h3');
+    const meta = document.createElement('span');
+    if (entry.input.outcome === 'draw') {
+      title.textContent = `第 ${entry.roundNumber} 局 · 流局`;
+      meta.textContent = `${beforeDealer.name} 保持 ${beforeTier.label}`;
+    } else {
+      const winner = playerById(entry.input.winnerId, entry.before);
+      title.textContent = `第 ${entry.roundNumber} 局 · ${winner.name} ${entry.calculation.winType.label}`;
+      const next = getNextRoundState({
+        dealerId: entry.before.dealerId,
+        dealerRun: entry.before.dealerRun,
+        ...entry.input,
+      });
+      const nextDealer = playerById(next.dealerId, entry.before);
+      const nextTier = getDealerTier(next.dealerRun);
+      meta.textContent = `${nextDealer.name} 接下来是 ${nextTier.label} ×${nextTier.multiplier}`;
+    }
+    heading.append(title, meta);
+    const deltas = document.createElement('div');
+    deltas.className = 'history-deltas';
+    for (const player of entry.before.players) {
+      const item = document.createElement('span');
+      const playerName = document.createElement('small');
+      playerName.textContent = player.name;
+      const playerDelta = document.createElement('b');
+      playerDelta.className = entry.deltas[player.id] > 0
+        ? 'is-positive'
+        : entry.deltas[player.id] < 0
+          ? 'is-negative'
+          : '';
+      playerDelta.textContent = formatScore(entry.deltas[player.id]);
+      item.append(playerName, playerDelta);
+      deltas.append(item);
+    }
+    card.append(heading, deltas);
+    target.append(card);
+  }
+}
+
+$('#setup-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const names = SEATS.map((seat) => $(`#player-${seat}`).value);
+  const dealerSeat = $('input[name="dealer-seat"]:checked')?.value;
+  try {
+    match = createMatch({
+      names,
+      dealerSeat,
+      baseScore: $('#base-score').value,
+      liabilityEnabled: $('#liability-enabled').checked,
+    });
+    storage.save(match);
+    storageError = '';
+    $('#setup-error').textContent = '';
+    renderApp();
+    showToast('座位已固定，开始第一局');
+  } catch (error) {
+    $('#setup-error').textContent = error.message;
+  }
+});
+
+$('#open-deal-guide').addEventListener('click', (event) => {
+  dieOne = 1;
+  dieTwo = 1;
+  renderDealGuide();
+  openDrawer('deal-drawer', event.currentTarget);
+});
+
+$('#open-settlement').addEventListener('click', (event) => {
+  settlementDraft = newSettlementDraft();
+  renderSettlementChoices();
+  openDrawer('settlement-drawer', event.currentTarget);
+});
+
+$('#open-history').addEventListener('click', (event) => {
+  renderHistory();
+  openDrawer('history-drawer', event.currentTarget);
+});
+
+$('#open-reset').addEventListener('click', () => $('#reset-dialog').showModal());
+
+$$('[data-close-drawer]').forEach((button) => {
+  button.addEventListener('click', () => closeDrawer(button.dataset.closeDrawer));
+});
+
+$$('[data-outcome]').forEach((button) => {
+  button.addEventListener('click', () => {
+    settlementDraft.outcome = button.dataset.outcome;
+    renderSettlementChoices();
+  });
+});
+
+$$('[data-liability]').forEach((button) => {
+  button.addEventListener('click', () => {
+    settlementDraft.liability = button.dataset.liability === 'true';
+    if (!settlementDraft.liability) settlementDraft.liablePlayerId = null;
+    renderSettlementChoices();
+  });
+});
+
+$('#confirm-settlement').addEventListener('click', () => {
+  const beforeDealerId = match.dealerId;
+  const beforeDealerRun = match.dealerRun;
+  const input = {
+    outcome: settlementDraft.outcome,
+    winnerId: settlementDraft.outcome === 'win' ? settlementDraft.winnerId : null,
+    winTypeId: settlementDraft.outcome === 'win' ? settlementDraft.winTypeId : null,
+    liablePlayerId: settlementDraft.outcome === 'win' && settlementDraft.liability
+      ? settlementDraft.liablePlayerId
+      : null,
+  };
+  try {
+    const winnerName = input.winnerId ? playerById(input.winnerId).name : '';
+    match = settleRound(match, input);
+    storage.save(match);
+    renderDashboard();
+    closeDrawer('settlement-drawer');
+    if (input.outcome === 'draw') {
+      showToast('流局已记录，庄家和老数不变');
+    } else if (input.winnerId === beforeDealerId) {
+      const tier = getDealerTier(beforeDealerRun + 1);
+      showToast(`${winnerName} 连庄，进入${tier.label} ×${tier.multiplier}`);
+    } else {
+      showToast(`${winnerName} 胡牌并接庄，从平庄 ×2 开始`);
+    }
+  } catch (error) {
+    $('#settlement-error').textContent = error.message;
+  }
+});
+
+$('#undo-round').addEventListener('click', () => {
+  if (!match.history.length) return;
+  if (!window.confirm('撤销上一局？分数、庄家和老数都会恢复。')) return;
+  try {
+    match = undoLastRound(match);
+    storage.save(match);
+    renderDashboard();
+    renderHistory();
+    showToast('上一局已撤销');
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
+$('#confirm-reset').addEventListener('click', () => {
+  storage.clear();
+  match = null;
+  storageError = '';
+  $('#setup-form').reset();
+  $('#liability-enabled').checked = true;
+  $('#base-score').value = '1';
+  $('input[name="dealer-seat"][value="bottom"]').checked = true;
+  $('#setup-error').textContent = '';
+  renderApp();
+  showToast('已清除，可以重新摆座位');
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  const openDrawerElement = $$('.drawer.is-open').at(-1);
+  if (openDrawerElement) closeDrawer(openDrawerElement.id);
+});
+
+buildDiceOptions();
+renderApp();
+
+})();
+    </script>
+  </body>
+</html>
