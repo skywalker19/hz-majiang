@@ -5,3 +5,8 @@ v3/release/
 v3/dist/models/
 v4/release/
 snapshots/*.tar.gz
+__pycache__/
+
+# Keep deployment instructions versioned despite parent workspace ignore rules.
+!docs/
+!docs/*.md
